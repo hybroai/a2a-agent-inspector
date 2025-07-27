@@ -1,0 +1,58 @@
+[project]
+name = "a2a-agent-inspector"
+version = "1.0.0"
+description = "Agent-to-Agent Communication Compliance Validation Service"
+authors = [
+    {name = "Hybro AI", email = "jerome@hybro.ai"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["a2a", "agent", "inspector", "fastapi"]
+
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "httpx>=0.25.2",
+    "pydantic>=2.5.0",
+    "a2a>=0.44",
+    "a2a-sdk>=0.2.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "mypy>=1.7.0",
+]
+
+# Script entry points
+[project.scripts]
+a2a-inspector = "a2a_inspector.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Important: Tell hatchling where to find our package
+[tool.hatch.build.targets.wheel]
+packages = ["src/a2a_inspector"]
+
+# Tool configurations
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["a2a_inspector"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
