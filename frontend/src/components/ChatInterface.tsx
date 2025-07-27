@@ -71,8 +71,8 @@ function ChatInterface({ agentUrl, title = "Agent Chat" }: ChatInterfaceProps) {
       const response = await sendMessage(agentUrl, userMessage);
       
       if (response.success) {
-        const agentResponse = response.response || response.message || "Message sent successfully";
-        addMessage('agent', agentResponse);
+        const agentResponse = response.data;
+        addMessage('agent', JSON.stringify(agentResponse, null, 2));
         toast.success("Message sent successfully");
       } else {
         const errorMsg = response.error || "Failed to send message";
