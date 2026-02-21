@@ -40,7 +40,7 @@ class A2AInspectorService:
                 # New API: Use ClientFactory to connect and get agent card
                 config = ClientConfig(streaming=False)
                 client = await ClientFactory.connect(agent_url, client_config=config)
-                card = client.agent_card
+                card = await client.get_card()
                 card_data = card.model_dump(exclude_none=False)
                 await client.close()
             else:
