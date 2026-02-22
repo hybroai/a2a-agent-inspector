@@ -15,8 +15,8 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "httpx>=0.25.2",
     "pydantic>=2.5.0",
-    "a2a>=0.44",
-    "a2a-sdk>=0.2.16",
+    # a2a-sdk 0.3.x is recommended; code also supports legacy 'a2a' package
+    "a2a-sdk>=0.3.0",
 ]
 
 [project.optional-dependencies]

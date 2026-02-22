@@ -1,17 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { Copy, Check, FileText } from "lucide-react";
+import { Copy, Check, FileText, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 interface EditorProps {
-  data?: any;
+  data?: Record<string, unknown>;
   title?: string;
   description?: string;
-  onDataChange?: (data: any) => void;
+  onDataChange?: (data: Record<string, unknown>) => void;
   readOnly?: boolean;
   maxHeight?: string;
 }
@@ -29,10 +29,10 @@ function Editor({
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
-  const formatJson = (obj: any) => {
+  const formatJson = (obj: Record<string, unknown>) => {
     try {
       return JSON.stringify(obj, null, 2);
-    } catch (err) {
+    } catch {
       return String(obj);
     }
   };
@@ -71,7 +71,7 @@ function Editor({
       toast.success("JSON copied to clipboard!");
       
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy to clipboard");
     }
   };
@@ -82,18 +82,18 @@ function Editor({
       const formatted = formatJson(parsed);
       setJsonText(formatted);
       toast.success("JSON formatted successfully");
-    } catch (err) {
+    } catch {
       toast.error("Cannot format invalid JSON");
     }
   };
 
   return (
     <div className="w-full">
-      <Card>
-        <CardHeader>
+      <Card className="border-0 shadow-none bg-transparent">
+        <CardHeader className="px-0 pt-0">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <FileText className="h-5 w-5" />
                 {title}
               </CardTitle>
@@ -108,6 +108,7 @@ function Editor({
                 disabled={!isValid}
                 title="Format JSON"
               >
+                <Code className="h-4 w-4 mr-1" />
                 Format
               </Button>
               
@@ -119,7 +120,7 @@ function Editor({
                 title="Copy to clipboard"
               >
                 {copied ? (
-                  <Check className="h-4 w-4 text-green-600" />
+                  <Check className="h-4 w-4 text-green-500" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
@@ -128,23 +129,23 @@ function Editor({
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-0 pb-0">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div 
                 className={`w-2 h-2 rounded-full ${
-                  isValid ? 'bg-green-500' : 'bg-red-500'
+                  isValid ? 'bg-green-500' : 'bg-destructive'
                 }`}
               />
-              <span className={isValid ? 'text-green-700' : 'text-red-700'}>
+              <span className={isValid ? 'text-green-600 dark:text-green-400' : 'text-destructive'}>
                 {isValid ? 'Valid JSON' : 'Invalid JSON'}
               </span>
               {readOnly && (
-                <span className="text-gray-500 text-xs">(Read Only)</span>
+                <span className="text-muted-foreground text-xs">(Read Only)</span>
               )}
             </div>
             
-            <div className="text-gray-500">
+            <div className="text-muted-foreground">
               {jsonText.split('\n').length} lines
             </div>
           </div>
@@ -155,8 +156,8 @@ function Editor({
               onChange={handleTextChange}
               readOnly={readOnly}
               className={`font-mono text-sm resize-none ${
-                !isValid ? 'border-red-500 focus-visible:ring-red-500' : ''
-              } ${readOnly ? 'bg-gray-50 cursor-default' : ''}`}
+                !isValid ? 'border-destructive focus-visible:ring-destructive' : ''
+              } ${readOnly ? 'bg-muted/50 cursor-default' : ''}`}
               style={{ 
                 minHeight: maxHeight,
                 maxHeight: maxHeight,
@@ -167,15 +168,15 @@ function Editor({
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-800">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive">
                 <strong>JSON Error:</strong> {error}
               </p>
             </div>
           )}
 
           {isValid && jsonText && (
-            <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-2 border-t">
+            <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
               <span>Size: {new Blob([jsonText]).size} bytes</span>
               <span>Characters: {jsonText.length}</span>
               {(() => {
@@ -186,7 +187,7 @@ function Editor({
                   } else if (typeof parsed === 'object' && parsed !== null) {
                     return <span>Object keys: {Object.keys(parsed).length}</span>;
                   }
-                } catch {}
+                } catch { /* ignore */ }
                 return null;
               })()}
             </div>
@@ -197,4 +198,4 @@ function Editor({
   );
 }
 
-export default Editor; 
+export default Editor;

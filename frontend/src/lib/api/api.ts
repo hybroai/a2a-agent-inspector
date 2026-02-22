@@ -11,7 +11,7 @@ export const loadAgent = async (url: string) => {
 }
 
 export const sendMessage = async (url: string, message: string) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/inspector/sendMessage`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/inspector/send-message`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
