@@ -1,0 +1,42 @@
+# A2A Agent Inspector - Docker Ignore File
+
+# Git
+.git
+.gitignore
+
+# Node modules (will be installed in container)
+frontend/node_modules
+frontend/.next
+
+# Python virtual environments
+backend/.venv
+backend/__pycache__
+backend/**/__pycache__
+backend/*.pyc
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+**/tests
+**/*.test.*
+**/*.spec.*
+
+# Documentation
+*.md
+!README.md
+
+# Lock files (we'll use fresh installs)
+# frontend/package-lock.json
+# backend/uv.lock
