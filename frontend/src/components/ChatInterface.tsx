@@ -335,7 +335,7 @@ function ChatInterface({ agentUrl, title = "Agent Chat", agentName }: ChatInterf
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder={agentUrl ? "Type your message..." : "Load an agent first..."}
                 disabled={!agentUrl || isLoading}
                 className="flex-1"

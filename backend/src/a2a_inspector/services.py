@@ -1,7 +1,10 @@
 """A2A Inspector Service Layer"""
 
+import ipaddress
 import logging
-from typing import Any, Dict
+import socket
+from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 import httpx
 from uuid import uuid4
 
@@ -14,6 +17,21 @@ from a2a.types import (
 
 logger = logging.getLogger(__name__)
 
+# Blocked IP ranges for SSRF protection
+BLOCKED_IP_RANGES = [
+    ipaddress.ip_network('127.0.0.0/8'),      # Loopback
+    ipaddress.ip_network('10.0.0.0/8'),       # Private Class A
+    ipaddress.ip_network('172.16.0.0/12'),    # Private Class B
+    ipaddress.ip_network('192.168.0.0/16'),   # Private Class C
+    ipaddress.ip_network('169.254.0.0/16'),   # Link-local / Cloud metadata
+    ipaddress.ip_network('0.0.0.0/8'),        # Current network
+    ipaddress.ip_network('224.0.0.0/4'),      # Multicast
+    ipaddress.ip_network('240.0.0.0/4'),      # Reserved
+    ipaddress.ip_network('::1/128'),          # IPv6 loopback
+    ipaddress.ip_network('fc00::/7'),         # IPv6 private
+    ipaddress.ip_network('fe80::/10'),        # IPv6 link-local
+]
+
 
 class A2AInspectorService:
     """A2A Agent Inspector Service"""
@@ -21,6 +39,54 @@ class A2AInspectorService:
     def __init__(self):
         # timeout for http requests
         self.timeout = 180.0
+
+    def validate_url(self, url: str) -> Optional[str]:
+        """
+        Validate URL format and check for SSRF vulnerabilities.
+        Returns an error message if invalid, None if valid.
+        """
+        if not url:
+            return "URL is required"
+        
+        try:
+            parsed = urlparse(url)
+        except Exception:
+            return "Invalid URL format"
+        
+        # Check scheme
+        if parsed.scheme not in ('http', 'https'):
+            return "URL must use http or https scheme"
+        
+        # Check hostname exists
+        if not parsed.hostname:
+            return "URL must include a hostname"
+        
+        hostname = parsed.hostname.lower()
+        
+        # Block localhost variations
+        if hostname in ('localhost', 'localhost.localdomain'):
+            return "Access to localhost is not allowed"
+        
+        # Resolve hostname and check against blocked ranges
+        try:
+            # Get all IP addresses for the hostname
+            addr_info = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+            for family, _, _, _, sockaddr in addr_info:
+                ip_str = sockaddr[0]
+                try:
+                    ip = ipaddress.ip_address(ip_str)
+                    for blocked_range in BLOCKED_IP_RANGES:
+                        if ip in blocked_range:
+                            return f"Access to private/internal IP addresses is not allowed"
+                except ValueError:
+                    continue
+        except socket.gaierror:
+            return f"Unable to resolve hostname: {hostname}"
+        except Exception as e:
+            logger.warning(f"Error validating URL {url}: {e}")
+            return "Error validating URL"
+        
+        return None
 
     async def load_agent_card(self, agent_url: str) -> Dict[str, Any]:
         """Load Agent card information"""
