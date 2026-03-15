@@ -66,6 +66,10 @@ RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run \
     && chown -R www-data:www-data /var/log/nginx \
     && chmod 755 /var/log/nginx
 
+# Allow the inspector to reach agents on localhost / private networks.
+# Set to "false" when deploying publicly.
+ENV ALLOW_LOCAL_NETWORK="true"
+
 # Expose port
 EXPOSE 3000
 

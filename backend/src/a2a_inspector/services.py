@@ -2,6 +2,7 @@
 
 import ipaddress
 import logging
+import os
 import socket
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
@@ -16,6 +17,10 @@ from a2a.types import (
 )
 
 logger = logging.getLogger(__name__)
+
+# When True, skip SSRF protection to allow inspecting agents on localhost / private networks.
+# Set via ALLOW_LOCAL_NETWORK env var (useful when running inside Docker).
+ALLOW_LOCAL_NETWORK = os.getenv("ALLOW_LOCAL_NETWORK", "false").lower() in ("true", "1", "yes")
 
 # Blocked IP ranges for SSRF protection
 BLOCKED_IP_RANGES = [
@@ -44,29 +49,34 @@ class A2AInspectorService:
         """
         Validate URL format and check for SSRF vulnerabilities.
         Returns an error message if invalid, None if valid.
+        When ALLOW_LOCAL_NETWORK is True, localhost and private IPs are permitted.
         """
         if not url:
             return "URL is required"
-        
+
         try:
             parsed = urlparse(url)
         except Exception:
             return "Invalid URL format"
-        
+
         # Check scheme
         if parsed.scheme not in ('http', 'https'):
             return "URL must use http or https scheme"
-        
+
         # Check hostname exists
         if not parsed.hostname:
             return "URL must include a hostname"
-        
+
+        # Skip network-level checks when local access is allowed
+        if ALLOW_LOCAL_NETWORK:
+            return None
+
         hostname = parsed.hostname.lower()
-        
+
         # Block localhost variations
         if hostname in ('localhost', 'localhost.localdomain'):
             return "Access to localhost is not allowed"
-        
+
         # Resolve hostname and check against blocked ranges
         try:
             # Get all IP addresses for the hostname
@@ -85,7 +95,7 @@ class A2AInspectorService:
         except Exception as e:
             logger.warning(f"Error validating URL {url}: {e}")
             return "Error validating URL"
-        
+
         return None
 
     async def load_agent_card(self, agent_url: str) -> Dict[str, Any]:

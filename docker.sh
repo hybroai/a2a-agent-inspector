@@ -53,6 +53,7 @@ run() {
     docker run -d \
         --name "${CONTAINER_NAME}" \
         -p "${PORT}:3000" \
+        --add-host=host.docker.internal:host-gateway \
         --restart unless-stopped \
         "${IMAGE_NAME}:${IMAGE_TAG}"
     

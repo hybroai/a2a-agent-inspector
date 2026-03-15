@@ -57,6 +57,21 @@ docker run -d -p 8080:3000 --name a2a-inspector a2a-agent-inspector
 | API Docs     | http://localhost:3000/docs   |
 | Health Check | http://localhost:3000/health |
 
+### Inspecting Local Agents
+
+When running in Docker, the container cannot reach `localhost` on your host machine directly. Use `host.docker.internal` instead:
+
+```
+# If your agent runs on localhost:8080, enter this URL in the inspector:
+http://host.docker.internal:8080
+```
+
+The Docker image ships with `ALLOW_LOCAL_NETWORK=true` by default so the inspector can reach agents on localhost and private networks. To disable this (e.g. for public deployments):
+
+```bash
+docker run -d -p 3000:3000 -e ALLOW_LOCAL_NETWORK=false --name a2a-inspector a2a-agent-inspector
+```
+
 ### Container Management
 
 ```bash
